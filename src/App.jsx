@@ -17,15 +17,11 @@ function App() {
   const [todo, setTodo] = useState('')
 
   const Login = details => {
-
-    console.log(details);
     if (details.username == credentials.username && details.password == credentials.password) {
-      console.log("logedin");
       setUser({
         username: details.username,
       })
     } else {
-      console.log("do not match");
       setError('Details do not match!');
     }
   }

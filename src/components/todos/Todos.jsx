@@ -3,13 +3,17 @@ import { useState, useEffect } from 'react';
 import Table from 'react-bootstrap/Table'
 import Pagination from 'react-bootstrap/Pagination'
 import _ from 'lodash'
+import PopUp from "../popUp/PopUp";
+import Button from 'react-bootstrap/Button'
 
 const url = "https://jsonplaceholder.typicode.com/todos";
 const pageSize = 20;
 
-const Todos = () => { 
+const Todos = () => {
+  const [show, setShow] = useState(false);
+  const [popupBox, setPopupBox] = useState('')
   const [todo, setTodo] = useState([])
-  const [paginated, setPaginated] = useState()
+  const [paginated, setPaginated] = useState([])
   const [currentpage, setCurrentpage] = useState(1)
 
   useEffect(() => {    
@@ -20,13 +24,21 @@ const Todos = () => {
     }
     getData();
   }, [url]);
-  console.log('object');
-  console.log(paginated);
 
   const pageCount = todo ? Math.ceil(todo.length/pageSize) : 0
   if (pageCount === 1) return null;
   const pages = _.range(1, pageCount+1)
-  console.log(pages);
+
+  const closePopup = () => {
+    setShow(false)
+  };
+  
+  const pagination = (pageNo) => {
+    setCurrentpage(pageNo)
+    const startIndex = (pageNo - 1) * pageSize
+    const paginatedTodo = _(todo).slice(startIndex).take(pageSize).value()
+    setPaginated(paginatedTodo)
+  }
   return (
     <div>
       <Table striped bordered hover>
@@ -40,13 +52,18 @@ const Todos = () => {
         </thead>
         <tbody>
         {
-          todo.map( singleTodo => (
+          paginated.map( singleTodo => (
             <tr>
               <td>{singleTodo.userId}</td>
               <td>{singleTodo.id}</td>
               <td>{singleTodo.title}</td>
               <td>{singleTodo.completed ? "yes" : "no"}</td>
-              
+              <td>
+                <Button variant="primary" onClick={e => {
+                  setPopupBox(singleTodo.id);
+                  setShow(true)
+                }} >More</Button>
+              </td>
             </tr>
           ))
         }
@@ -56,10 +73,11 @@ const Todos = () => {
       <Pagination>
         {
           pages.map((page) => (
-            <Pagination.Item>{page}</Pagination.Item>
+            <Pagination.Item onClick={() => pagination(page)} className={page === currentpage ? "active" : ''}>{page}</Pagination.Item>
           ))
         }
       </Pagination>
+      <PopUp todoId={popupBox} closePopup={closePopup} show={show}/>
     </div>
   )
 }
